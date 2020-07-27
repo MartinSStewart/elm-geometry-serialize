@@ -5,11 +5,11 @@ import Direction2d exposing (Direction2d)
 import Direction3d exposing (Direction3d)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import Geometry.Serialize as Serialize
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
 import Quantity exposing (Quantity)
 import Serialize exposing (Codec)
-import Serialize.Geometry
 import SketchPlane3d
 import Test exposing (Test, describe, test)
 import Vector2d exposing (Vector2d)
@@ -19,19 +19,19 @@ import Vector3d exposing (Vector3d)
 suite : Test
 suite =
     describe "Round trip tests"
-        [ roundTrip point2d "Point2d" Serialize.Geometry.point2d
-        , roundTrip point3d "Point3d" Serialize.Geometry.point3d
-        , roundTrip vector2d "Vector2d" Serialize.Geometry.vector2d
-        , roundTrip vector3d "Vector3d" Serialize.Geometry.vector3d
+        [ roundTrip point2d "Point2d" Serialize.point2d
+        , roundTrip point3d "Point3d" Serialize.point3d
+        , roundTrip vector2d "Vector2d" Serialize.vector2d
+        , roundTrip vector3d "Vector3d" Serialize.vector3d
         , roundTripEqualWithin
             direction2d
             "Direction2d"
-            Serialize.Geometry.direction2d
+            Serialize.direction2d
             (Direction2d.equalWithin (Angle.degrees 0.1))
         , roundTripEqualWithin
             direction3d
             "Direction3d"
-            Serialize.Geometry.direction3d
+            Serialize.direction3d
             (Direction3d.equalWithin (Angle.degrees 0.1))
         ]
 
