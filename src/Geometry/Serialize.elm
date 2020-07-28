@@ -35,11 +35,12 @@ module Geometry.Serialize exposing
     , vector3d
     )
 
+import Angle
 import Arc2d exposing (Arc2d)
 import Arc3d exposing (Arc3d)
 import ArcLengthParameterization
-import Axis2d
-import Axis3d
+import Axis2d exposing (Axis2d)
+import Axis3d exposing (Axis3d)
 import Block3d exposing (Block3d)
 import BoundingBox2d exposing (BoundingBox2d)
 import BoundingBox3d exposing (BoundingBox3d)
@@ -84,6 +85,8 @@ quantity =
     S.float |> S.map Quantity.Quantity (\(Quantity.Quantity a) -> a)
 
 
+{-| Codec for [Arc2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Arc2d)
+-}
 arc2d : S.Codec e (Arc2d units coordinates)
 arc2d =
     S.record Arc2d.sweptAround
@@ -93,6 +96,8 @@ arc2d =
         |> S.finishRecord
 
 
+{-| Codec for [Arc3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Arc3d)
+-}
 arc3d : S.Codec e (Arc3d units coordinates)
 arc3d =
     S.record Arc3d.sweptAround
@@ -102,7 +107,9 @@ arc3d =
         |> S.finishRecord
 
 
-axis2d : S.Codec e (Axis2d.Axis2d units coordinates)
+{-| Codec for [Axis2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Axis2d)
+-}
+axis2d : S.Codec e (Axis2d units coordinates)
 axis2d =
     S.record Axis2d.withDirection
         |> S.field Axis2d.direction direction2d
@@ -110,7 +117,9 @@ axis2d =
         |> S.finishRecord
 
 
-axis3d : S.Codec e (Axis3d.Axis3d units coordinates)
+{-| Codec for [Axis3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Axis3d)
+-}
+axis3d : S.Codec e (Axis3d units coordinates)
 axis3d =
     S.record Axis3d.withDirection
         |> S.field Axis3d.direction direction3d
@@ -119,12 +128,16 @@ axis3d =
 
 
 
+--{-| Codec for [Block3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Block3d)
+---}
 --block3d =
 --    S.record (Block3d.from)
 --        |> S.field Block3d
 --        |> S.finishRecord
 
 
+{-| Codec for [BoundingBox2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/BoundingBox2d)
+-}
 boundingBox2d : S.Codec e (BoundingBox2d units coordinates)
 boundingBox2d =
     S.record (\minX minY maxX maxY -> { minX = minX, minY = minY, maxX = maxX, maxY = maxY })
@@ -136,6 +149,8 @@ boundingBox2d =
         |> S.map BoundingBox2d.fromExtrema BoundingBox2d.extrema
 
 
+{-| Codec for [BoundingBox3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/BoundingBox3d)
+-}
 boundingBox3d : S.Codec e (BoundingBox3d units coordinates)
 boundingBox3d =
     S.record
@@ -152,6 +167,8 @@ boundingBox3d =
         |> S.map BoundingBox3d.fromExtrema BoundingBox3d.extrema
 
 
+{-| Codec for [Circle2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Circle2d)
+-}
 circle2d : S.Codec e (Circle2d units coordinates)
 circle2d =
     S.record Circle2d.withRadius
@@ -160,6 +177,8 @@ circle2d =
         |> S.finishRecord
 
 
+{-| Codec for [Circle3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Circle3d)
+-}
 circle3d : S.Codec e (Circle3d units coordinates)
 circle3d =
     S.record Circle3d.withRadius
@@ -169,6 +188,8 @@ circle3d =
         |> S.finishRecord
 
 
+{-| Codec for [Cone3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Cone3d)
+-}
 cone3d : S.Codec e (Cone3d units coordinates)
 cone3d =
     S.record
@@ -182,6 +203,8 @@ cone3d =
         |> S.finishRecord
 
 
+{-| Codec for [CubicSpline2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/CubicSpline2d)
+-}
 cubicSpline2d : S.Codec e (CubicSpline2d units coordinates)
 cubicSpline2d =
     S.record CubicSpline2d.fromControlPoints
@@ -192,6 +215,8 @@ cubicSpline2d =
         |> S.finishRecord
 
 
+{-| Codec for [CubicSpline3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/CubicSpline3d)
+-}
 cubicSpline3d : S.Codec e (CubicSpline3d units coordinates)
 cubicSpline3d =
     S.record CubicSpline3d.fromControlPoints
@@ -202,6 +227,8 @@ cubicSpline3d =
         |> S.finishRecord
 
 
+{-| Codec for [Cylinder3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Cylinder3d)
+-}
 cylinder3d : S.Codec e (Cylinder3d.Cylinder3d units coordinates)
 cylinder3d =
     S.record
@@ -215,11 +242,15 @@ cylinder3d =
         |> S.finishRecord
 
 
+{-| Codec for [Direction2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Direction2d)
+-}
 direction2d : S.Codec e (Direction2d coordinates)
 direction2d =
     quantity |> S.map Direction2d.fromAngle Direction2d.toAngle
 
 
+{-| Codec for [Direction3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Direction3d)
+-}
 direction3d : S.Codec e (Direction3d coordinates)
 direction3d =
     S.tuple quantity quantity
@@ -232,9 +263,15 @@ direction3d =
             )
 
 
+{-| Codec for [Ellipse2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Ellipse2d)
+-}
 ellipse2d : S.Codec e (Ellipse2d units coordinates)
 ellipse2d =
-    S.record (\centerPoint xDirection xRadius yRadius -> Ellipse2d.with { centerPoint = centerPoint, xDirection = xDirection, xRadius = xRadius, yRadius = yRadius })
+    S.record
+        (\centerPoint xDirection xRadius yRadius ->
+            Ellipse2d.with
+                { centerPoint = centerPoint, xDirection = xDirection, xRadius = xRadius, yRadius = yRadius }
+        )
         |> S.field Ellipse2d.centerPoint point2d
         |> S.field Ellipse2d.xDirection direction2d
         |> S.field Ellipse2d.xRadius quantity
@@ -242,6 +279,8 @@ ellipse2d =
         |> S.finishRecord
 
 
+{-| Codec for [EllipticalArc2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/EllipticalArc2d)
+-}
 ellipticalArc2d : S.Codec e (EllipticalArc2d units coordinates)
 ellipticalArc2d =
     S.record
@@ -264,9 +303,14 @@ ellipticalArc2d =
         |> S.finishRecord
 
 
+{-| Codec for [Frame2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Frame2d)
+-}
 frame2d : S.Codec e (Frame2d units coordinates defines)
 frame2d =
-    S.record (\position yDirection isRightHanded -> { position = position, yDirection = yDirection, isRightHanded = isRightHanded })
+    S.record
+        (\position yDirection isRightHanded ->
+            { position = position, yDirection = yDirection, isRightHanded = isRightHanded }
+        )
         |> S.field .position point2d
         |> S.field .yDirection direction2d
         |> S.field .isRightHanded S.bool
@@ -292,12 +336,16 @@ frame2d =
 
 
 
+--{-| Codec for [Frame3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Frame3d)
+---}
 --frame3d =
 --    S.record (Frame3d.)
 --        |> S.field
 --        |> S.finishRecord
 
 
+{-| Codec for [LineSegment2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/LineSegment2d)
+-}
 lineSegment2d : S.Codec e (LineSegment2d units coordinates)
 lineSegment2d =
     S.record LineSegment2d.from
@@ -306,6 +354,8 @@ lineSegment2d =
         |> S.finishRecord
 
 
+{-| Codec for [LineSegment3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/LineSegment3d)
+-}
 lineSegment3d : S.Codec e (LineSegment3d units coordinates)
 lineSegment3d =
     S.record LineSegment3d.from
@@ -314,6 +364,8 @@ lineSegment3d =
         |> S.finishRecord
 
 
+{-| Codec for [Plane3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Plane3d)
+-}
 plane3d : S.Codec e (Plane3d units coordinates)
 plane3d =
     S.record Plane3d.through
@@ -322,6 +374,8 @@ plane3d =
         |> S.finishRecord
 
 
+{-| Codec for [Point2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Point2d)
+-}
 point2d : S.Codec e (Point2d units coordinates)
 point2d =
     S.record Point2d.xy
@@ -330,6 +384,8 @@ point2d =
         |> S.finishRecord
 
 
+{-| Codec for [Point3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Point3d)
+-}
 point3d : S.Codec e (Point3d units coordinates)
 point3d =
     S.record Point3d.xyz
@@ -339,6 +395,8 @@ point3d =
         |> S.finishRecord
 
 
+{-| Codec for [Polygon2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Polygon2d)
+-}
 polygon2d : S.Codec e (Polygon2d units coordinates)
 polygon2d =
     S.record Polygon2d.withHoles
@@ -347,16 +405,22 @@ polygon2d =
         |> S.finishRecord
 
 
+{-| Codec for [Polyline2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Polyline2d)
+-}
 polyline2d : S.Codec e (Polyline2d units coordinates)
 polyline2d =
     S.list point2d |> S.map Polyline2d.fromVertices Polyline2d.vertices
 
 
+{-| Codec for [Polyline3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Polyline3d)
+-}
 polyline3d : S.Codec e (Polyline3d units coordinates)
 polyline3d =
     S.list point3d |> S.map Polyline3d.fromVertices Polyline3d.vertices
 
 
+{-| Codec for [QuadraticSpline2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/QuadraticSpline2d)
+-}
 quadraticSpline2d : S.Codec e (QuadraticSpline2d units coordinates)
 quadraticSpline2d =
     S.record QuadraticSpline2d.fromControlPoints
@@ -366,6 +430,8 @@ quadraticSpline2d =
         |> S.finishRecord
 
 
+{-| Codec for [QuadraticSpline3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/QuadraticSpline3d)
+-}
 quadraticSpline3d : S.Codec e (QuadraticSpline3d units coordinates)
 quadraticSpline3d =
     S.record QuadraticSpline3d.fromControlPoints
@@ -375,6 +441,8 @@ quadraticSpline3d =
         |> S.finishRecord
 
 
+{-| Codec for [Rectangle2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Rectangle2d)
+-}
 rectangle2d : S.Codec e (Rectangle2d units coordinates)
 rectangle2d =
     S.record Rectangle2d.withYAxis
@@ -384,6 +452,8 @@ rectangle2d =
 
 
 
+--{-| Codec for [Rectangle3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Rectangle3d)
+---}
 --rectangle3d : S.Codec e (Rectangle3d units coordinates)
 --rectangle3d =
 --    S.record Rectangle3d.centeredOn
@@ -392,14 +462,37 @@ rectangle2d =
 --        |> S.finishRecord
 
 
+{-| Codec for [SketchPlane3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/SketchPlane3d)
+-}
 sketchPlane3d : S.Codec e (SketchPlane3d units coordinates defines)
 sketchPlane3d =
-    S.record SketchPlane3d.through
+    S.record
+        (\position xDirection yDirection ->
+            let
+                angleDiff =
+                    Direction3d.angleFrom xDirection yDirection
+            in
+            if
+                (angleDiff |> Quantity.lessThan (Angle.degrees 90.1))
+                    && (angleDiff |> Quantity.greaterThan (Angle.degrees 89.9))
+            then
+                SketchPlane3d.unsafe { originPoint = position, xDirection = xDirection, yDirection = yDirection }
+
+            else
+                SketchPlane3d.unsafe
+                    { originPoint = position
+                    , xDirection = xDirection
+                    , yDirection = Direction3d.perpendicularTo xDirection
+                    }
+        )
         |> S.field SketchPlane3d.originPoint point3d
-        |> S.field SketchPlane3d.normalDirection direction3d
+        |> S.field SketchPlane3d.xDirection direction3d
+        |> S.field SketchPlane3d.yDirection direction3d
         |> S.finishRecord
 
 
+{-| Codec for [Sphere3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Sphere3d)
+-}
 sphere3d : S.Codec e (Sphere3d units coordinates)
 sphere3d =
     S.record Sphere3d.withRadius
@@ -408,16 +501,22 @@ sphere3d =
         |> S.finishRecord
 
 
+{-| Codec for [Triangle2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Triangle2d)
+-}
 triangle2d : S.Codec e (Triangle2d units coordinates)
 triangle2d =
     S.triple point2d point2d point2d |> S.map Triangle2d.fromVertices Triangle2d.vertices
 
 
+{-| Codec for [Triangle3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Triangle3d)
+-}
 triangle3d : S.Codec e (Triangle3d units coordinates)
 triangle3d =
     S.triple point3d point3d point3d |> S.map Triangle3d.fromVertices Triangle3d.vertices
 
 
+{-| Codec for [Vector2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Vector2d)
+-}
 vector2d : S.Codec e (Vector2d units coordinates)
 vector2d =
     S.record Vector2d.xy
@@ -426,6 +525,8 @@ vector2d =
         |> S.finishRecord
 
 
+{-| Codec for [Vector3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Vector3d)
+-}
 vector3d : S.Codec e (Vector3d units coordinates)
 vector3d =
     S.record Vector3d.xyz

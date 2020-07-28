@@ -1,19 +1,24 @@
 module Tests exposing (suite)
 
-import Angle
 import Axis2d exposing (Axis2d)
 import Axis3d exposing (Axis3d)
+import BoundingBox2d exposing (BoundingBox2d)
+import BoundingBox3d exposing (BoundingBox3d)
 import Direction2d exposing (Direction2d)
 import Direction3d exposing (Direction3d)
 import Expect exposing (Expectation)
 import Frame2d exposing (Frame2d)
 import Fuzz exposing (Fuzzer)
 import Geometry.Serialize as Serialize
+import Plane3d exposing (Plane3d)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
+import QuadraticSpline2d exposing (QuadraticSpline2d)
+import QuadraticSpline3d exposing (QuadraticSpline3d)
 import Quantity exposing (Quantity)
+import Rectangle2d exposing (Rectangle2d)
 import Serialize exposing (Codec)
-import SketchPlane3d
+import SketchPlane3d exposing (SketchPlane3d)
 import Test exposing (Test)
 import Vector2d exposing (Vector2d)
 import Vector3d exposing (Vector3d)
@@ -31,6 +36,13 @@ suite =
         , roundTripEqualWithin axis2d "Axis2d" Serialize.axis2d axis2dEqualWithin
         , roundTripEqualWithin axis3d "Axis3d" Serialize.axis3d axis3dEqualWithin
         , roundTripEqualWithin frame2d "Frame2d" Serialize.frame2d frame2dEqualWithin
+        , roundTripEqualWithin sketchPlane3d "SketchPlane3d" Serialize.sketchPlane3d sketchPlane3dEqualWithin
+        , roundTripEqualWithin plane3d "Plane3d" Serialize.plane3d plane3dEqualWithin
+        , roundTrip boundingBox2d "BoundingBox2d" Serialize.boundingBox2d
+        , roundTrip boundingBox3d "BoundingBox3d" Serialize.boundingBox3d
+        , roundTrip quadraticSpline2d "QuadraticSpline2d" Serialize.quadraticSpline2d
+        , roundTrip quadraticSpline3d "QuadraticSpline3d" Serialize.quadraticSpline3d
+        , roundTripEqualWithin rectangle2d "Rectangle2d" Serialize.rectangle2d rectangle2dEqualWithin
         ]
 
 
@@ -142,6 +154,63 @@ frame2d =
         Fuzz.bool
 
 
+sketchPlane3d : Fuzzer (SketchPlane3d units coordinates defines)
+sketchPlane3d =
+    Fuzz.map3
+        (\position direction rotation ->
+            SketchPlane3d.through position direction
+                |> SketchPlane3d.rotateAroundOwn SketchPlane3d.normalAxis rotation
+        )
+        point3d
+        direction3d
+        quantity
+
+
+plane3d : Fuzzer (Plane3d units coordinates)
+plane3d =
+    Fuzz.map2 Plane3d.withNormalDirection
+        direction3d
+        point3d
+
+
+boundingBox2d : Fuzzer (BoundingBox2d units coordinates)
+boundingBox2d =
+    Fuzz.map2 BoundingBox2d.from
+        point2d
+        point2d
+
+
+boundingBox3d : Fuzzer (BoundingBox3d units coordinates)
+boundingBox3d =
+    Fuzz.map2 BoundingBox3d.from
+        point3d
+        point3d
+
+
+quadraticSpline2d : Fuzzer (QuadraticSpline2d units coordinates)
+quadraticSpline2d =
+    Fuzz.map3 QuadraticSpline2d.fromControlPoints
+        point2d
+        point2d
+        point2d
+
+
+quadraticSpline3d : Fuzzer (QuadraticSpline3d units coordinates)
+quadraticSpline3d =
+    Fuzz.map3 QuadraticSpline3d.fromControlPoints
+        point3d
+        point3d
+        point3d
+
+
+rectangle2d : Fuzzer (Rectangle2d units coordinates)
+rectangle2d =
+    Fuzz.map3 (\p0 p1 rotation -> Rectangle2d.from p0 p1 |> Rectangle2d.rotateAround Point2d.origin rotation)
+        point2d
+        point2d
+        quantity
+
+
 frame2dEqualWithin : Frame2d units coordinates defines -> Frame2d units coordinates defines -> Bool
 frame2dEqualWithin f0 f1 =
     (Frame2d.originPoint f0 == Frame2d.originPoint f1)
@@ -186,3 +255,26 @@ axis3dEqualWithin : Axis3d units coordinates -> Axis3d units coordinates -> Bool
 axis3dEqualWithin a0 a1 =
     (Axis3d.originPoint a0 == Axis3d.originPoint a1)
         && direction3dEqualWithin (Axis3d.direction a0) (Axis3d.direction a1)
+
+
+sketchPlane3dEqualWithin : SketchPlane3d units coordinates defines -> SketchPlane3d units coordinates defines -> Bool
+sketchPlane3dEqualWithin s0 s1 =
+    axis3dEqualWithin (SketchPlane3d.normalAxis s0) (SketchPlane3d.normalAxis s1)
+        && direction3dEqualWithin (SketchPlane3d.xDirection s0) (SketchPlane3d.xDirection s1)
+        && direction3dEqualWithin (SketchPlane3d.yDirection s0) (SketchPlane3d.yDirection s1)
+
+
+plane3dEqualWithin : Plane3d units coordinates -> Plane3d units coordinates -> Bool
+plane3dEqualWithin p0 p1 =
+    axis3dEqualWithin (Plane3d.normalAxis p0) (Plane3d.normalAxis p1)
+
+
+rectangle2dEqualWithin : Rectangle2d units coordinates -> Rectangle2d units coordinates -> Bool
+rectangle2dEqualWithin r0 r1 =
+    (Rectangle2d.dimensions r0 == Rectangle2d.dimensions r1)
+        && (Rectangle2d.centerPoint r0 == Rectangle2d.centerPoint r1)
+
+
+
+--&& axis2dEqualWithin (Rectangle2d.xAxis r0) (Rectangle2d.xAxis r1)
+--&& axis2dEqualWithin (Rectangle2d.yAxis r0) (Rectangle2d.yAxis r1)

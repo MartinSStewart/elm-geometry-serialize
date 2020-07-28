@@ -1,7 +1,7 @@
 {
     "type": "package",
     "name": "MartinSStewart/elm-geometry-serialize",
-    "summary": "Codecs for ianmackenzie/elm-geometry.",
+    "summary": "elm-serialize codecs for ianmackenzie/elm-geometry",
     "license": "MIT",
     "version": "1.0.0",
     "exposed-modules": [
