@@ -1,5 +1,7 @@
 module Geometry.Serialize exposing
-    ( axis2d
+    ( arc2d
+    , arc3d
+    , axis2d
     , axis3d
     , boundingBox2d
     , boundingBox3d
@@ -9,7 +11,6 @@ module Geometry.Serialize exposing
     , cubicSpline2d
     , cubicSpline3d
     , cylinder3d
-    , delaunayTriangulation2d
     , direction2d
     , direction3d
     , ellipse2d
@@ -32,9 +33,10 @@ module Geometry.Serialize exposing
     , triangle3d
     , vector2d
     , vector3d
-    , voronoiDiagram2d
     )
 
+import Arc2d exposing (Arc2d)
+import Arc3d exposing (Arc3d)
 import ArcLengthParameterization
 import Axis2d
 import Axis3d
@@ -82,20 +84,22 @@ quantity =
     S.float |> S.map Quantity.Quantity (\(Quantity.Quantity a) -> a)
 
 
+arc2d : S.Codec e (Arc2d units coordinates)
+arc2d =
+    S.record Arc2d.sweptAround
+        |> S.field Arc2d.centerPoint point2d
+        |> S.field Arc2d.sweptAngle quantity
+        |> S.field Arc2d.startPoint point2d
+        |> S.finishRecord
 
---arc2d =
---    S.record (\)
---        |> S.field
---        |> S.finishRecord
---
---arc3d =
---    S.record (\)
---        |> S.field
---        |> S.finishRecord
---arcLengthParameterization =
---    S.record ArcLengthParameterization.build
---        |> S.field
---        |> S.finishRecord
+
+arc3d : S.Codec e (Arc3d units coordinates)
+arc3d =
+    S.record Arc3d.sweptAround
+        |> S.field Arc3d.axis axis3d
+        |> S.field Arc3d.sweptAngle quantity
+        |> S.field Arc3d.startPoint point3d
+        |> S.finishRecord
 
 
 axis2d : S.Codec e (Axis2d.Axis2d units coordinates)
@@ -115,10 +119,9 @@ axis3d =
 
 
 
---
 --block3d =
---    S.record (\)
---        |> S.field
+--    S.record (Block3d.from)
+--        |> S.field Block3d
 --        |> S.finishRecord
 
 
@@ -168,10 +171,14 @@ circle3d =
 
 cone3d : S.Codec e (Cone3d units coordinates)
 cone3d =
-    S.record Cone3d.from
+    S.record
+        (\basePoint direction radius length ->
+            Cone3d.startingAt basePoint direction { radius = radius, length = length }
+        )
         |> S.field Cone3d.basePoint point3d
-        |> S.field Cone3d.tipPoint point3d
+        |> S.field Cone3d.axialDirection direction3d
         |> S.field Cone3d.radius quantity
+        |> S.field Cone3d.length quantity
         |> S.finishRecord
 
 
@@ -197,16 +204,15 @@ cubicSpline3d =
 
 cylinder3d : S.Codec e (Cylinder3d.Cylinder3d units coordinates)
 cylinder3d =
-    S.record Cylinder3d.centeredOn
+    S.record
+        (\centerPoint axis radius length ->
+            Cylinder3d.centeredOn centerPoint axis { radius = radius, length = length }
+        )
         |> S.field Cylinder3d.centerPoint point3d
         |> S.field Cylinder3d.axialDirection direction3d
         |> S.field Cylinder3d.radius quantity
+        |> S.field Cylinder3d.length quantity
         |> S.finishRecord
-
-
-delaunayTriangulation2d : S.Codec (DelaunayTriangulation2d.Error (Point2d units coordinates)) (DelaunayTriangulation2d vertex units coordinates)
-delaunayTriangulation2d =
-    S.array point2d |> S.mapValid DelaunayTriangulation2d.fromPoints DelaunayTriangulation2d.vertices
 
 
 direction2d : S.Codec e (Direction2d coordinates)
@@ -427,8 +433,3 @@ vector3d =
         |> S.field Vector3d.yComponent quantity
         |> S.field Vector3d.zComponent quantity
         |> S.finishRecord
-
-
-voronoiDiagram2d : S.Codec (VoronoiDiagram2d.Error (Point2d units coordinates)) (VoronoiDiagram2d (Point2d units coordinates) units coordinates)
-voronoiDiagram2d =
-    S.array point2d |> S.mapValid VoronoiDiagram2d.fromPoints VoronoiDiagram2d.vertices
