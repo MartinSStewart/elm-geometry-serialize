@@ -26,16 +26,8 @@ suite =
         , roundTrip point3d "Point3d" Serialize.point3d
         , roundTrip vector2d "Vector2d" Serialize.vector2d
         , roundTrip vector3d "Vector3d" Serialize.vector3d
-        , roundTripEqualWithin
-            direction2d
-            "Direction2d"
-            Serialize.direction2d
-            (Direction2d.equalWithin (Angle.degrees 0.1))
-        , roundTripEqualWithin
-            direction3d
-            "Direction3d"
-            Serialize.direction3d
-            (Direction3d.equalWithin (Angle.degrees 0.1))
+        , roundTripEqualWithin direction2d "Direction2d" Serialize.direction2d direction2dEqualWithin
+        , roundTripEqualWithin direction3d "Direction3d" Serialize.direction3d direction3dEqualWithin
         , roundTripEqualWithin axis2d "Axis2d" Serialize.axis2d axis2dEqualWithin
         , roundTripEqualWithin axis3d "Axis3d" Serialize.axis3d axis3dEqualWithin
         , roundTripEqualWithin frame2d "Frame2d" Serialize.frame2d frame2dEqualWithin
