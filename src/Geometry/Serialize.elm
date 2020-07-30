@@ -3,6 +3,7 @@ module Geometry.Serialize exposing
     , arc3d
     , axis2d
     , axis3d
+    , block3d
     , boundingBox2d
     , boundingBox3d
     , circle2d
@@ -36,7 +37,7 @@ module Geometry.Serialize exposing
     , vector3d
     )
 
-import Angle
+import Angle exposing (Angle)
 import Arc2d exposing (Arc2d)
 import Arc3d exposing (Arc3d)
 import ArcLengthParameterization
@@ -90,11 +91,31 @@ quantity =
 -}
 arc2d : S.Codec e (Arc2d units coordinates)
 arc2d =
-    S.record Arc2d.sweptAround
-        |> S.field Arc2d.centerPoint point2d
-        |> S.field Arc2d.sweptAngle quantity
+    S.record
+        (\startPoint sweptAngle p1 ->
+            if isLargeAngle sweptAngle then
+                Arc2d.sweptAround p1 sweptAngle startPoint
+
+            else
+                Arc2d.from startPoint p1 sweptAngle
+        )
         |> S.field Arc2d.startPoint point2d
+        |> S.field Arc2d.sweptAngle quantity
+        |> S.field
+            (\arc ->
+                if isLargeAngle (Arc2d.sweptAngle arc) then
+                    Arc2d.centerPoint arc
+
+                else
+                    Arc2d.endPoint arc
+            )
+            point2d
         |> S.finishRecord
+
+
+isLargeAngle : Angle -> Bool
+isLargeAngle =
+    Quantity.abs >> Quantity.greaterThan (Angle.degrees 90)
 
 
 {-| Codec for [Arc3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Arc3d)
@@ -128,13 +149,14 @@ axis3d =
         |> S.finishRecord
 
 
-
---{-| Codec for [Block3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Block3d)
----}
---block3d =
---    S.record (Block3d.from)
---        |> S.field Block3d
---        |> S.finishRecord
+{-| Codec for [Block3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Block3d)
+-}
+block3d : S.Codec e (Block3d units coordinates)
+block3d =
+    S.record Block3d.centeredOn
+        |> S.field Block3d.axes frame3d
+        |> S.field Block3d.dimensions (S.triple quantity quantity quantity)
+        |> S.finishRecord
 
 
 {-| Codec for [BoundingBox2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/BoundingBox2d)
@@ -485,10 +507,30 @@ quadraticSpline3d =
 -}
 rectangle2d : S.Codec e (Rectangle2d units coordinates)
 rectangle2d =
-    S.record Rectangle2d.withYAxis
+    S.record
+        (\yAxis isRightHanded dimensions ->
+            let
+                rectangle =
+                    Rectangle2d.withYAxis yAxis dimensions
+            in
+            if isRightHanded then
+                rectangle
+
+            else
+                rectangle |> Rectangle2d.mirrorAcross (Rectangle2d.yAxis rectangle)
+        )
         |> S.field Rectangle2d.yAxis axis2d
+        |> S.field rectangle2dIsRightHanded S.bool
         |> S.field Rectangle2d.dimensions (S.tuple quantity quantity)
         |> S.finishRecord
+
+
+rectangle2dIsRightHanded : Rectangle2d units coordinates -> Bool
+rectangle2dIsRightHanded rectangle =
+    Direction2d.angleFrom
+        (Rectangle2d.yAxis rectangle |> Axis2d.direction)
+        (Rectangle2d.xAxis rectangle |> Axis2d.direction)
+        |> Quantity.lessThan Quantity.zero
 
 
 

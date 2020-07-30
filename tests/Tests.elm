@@ -1,5 +1,7 @@
 module Tests exposing (suite)
 
+import Arc2d exposing (Arc2d)
+import Arc3d exposing (Arc3d)
 import Axis2d exposing (Axis2d)
 import Axis3d exposing (Axis3d)
 import BoundingBox2d exposing (BoundingBox2d)
@@ -21,6 +23,8 @@ import Rectangle2d exposing (Rectangle2d)
 import Serialize exposing (Codec)
 import SketchPlane3d exposing (SketchPlane3d)
 import Test exposing (Test)
+import Triangle2d exposing (Triangle2d)
+import Triangle3d exposing (Triangle3d)
 import Vector2d exposing (Vector2d)
 import Vector3d exposing (Vector3d)
 
@@ -45,6 +49,10 @@ suite =
         , roundTrip quadraticSpline2d "QuadraticSpline2d" Serialize.quadraticSpline2d
         , roundTrip quadraticSpline3d "QuadraticSpline3d" Serialize.quadraticSpline3d
         , roundTripEqualWithin rectangle2d "Rectangle2d" Serialize.rectangle2d rectangle2dEqualWithin
+        , roundTrip triangle2d "Triangle2d" Serialize.triangle2d
+        , roundTrip triangle3d "Triangle3d" Serialize.triangle3d
+        , roundTripEqualWithin arc2d "Arc2d" Serialize.arc2d arc2dEqualWithin
+        , roundTripEqualWithin arc3d "Arc3d" Serialize.arc3d arc3dEqualWithin
         ]
 
 
@@ -69,7 +77,7 @@ roundTripEqualWithin fuzzer name codec equalWithin =
                     |> Serialize.decodeFromBytes codec
             of
                 Ok ok ->
-                    equalWithin ok value |> Expect.true "Values are not equal within tolerances"
+                    equalWithin ok value |> Expect.true ("Values are not equal within tolerances: " ++ Debug.toString ok)
 
                 Err _ ->
                     Expect.fail "Failed to decode value"
@@ -244,6 +252,38 @@ rectangle2d =
         quantity
 
 
+triangle2d : Fuzzer (Triangle2d units coordinates)
+triangle2d =
+    Fuzz.map3 Triangle2d.from
+        point2d
+        point2d
+        point2d
+
+
+triangle3d : Fuzzer (Triangle3d units coordinates)
+triangle3d =
+    Fuzz.map3 Triangle3d.from
+        point3d
+        point3d
+        point3d
+
+
+arc2d : Fuzzer (Arc2d units coordinates)
+arc2d =
+    Fuzz.map3 Arc2d.from
+        point2d
+        point2d
+        quantity
+
+
+arc3d : Fuzzer (Arc3d units coordinates)
+arc3d =
+    Fuzz.map3 Arc3d.sweptAround
+        axis3d
+        quantity
+        point3d
+
+
 frame2dEqualWithin : Frame2d units coordinates defines -> Frame2d units coordinates defines -> Bool
 frame2dEqualWithin f0 f1 =
     (Frame2d.originPoint f0 == Frame2d.originPoint f1)
@@ -314,8 +354,24 @@ rectangle2dEqualWithin : Rectangle2d units coordinates -> Rectangle2d units coor
 rectangle2dEqualWithin r0 r1 =
     (Rectangle2d.dimensions r0 == Rectangle2d.dimensions r1)
         && (Rectangle2d.centerPoint r0 == Rectangle2d.centerPoint r1)
+        && axis2dEqualWithin (Rectangle2d.xAxis r0) (Rectangle2d.xAxis r1)
+        && axis2dEqualWithin (Rectangle2d.yAxis r0) (Rectangle2d.yAxis r1)
 
 
+arc2dEqualWithin : Arc2d units coordinates -> Arc2d units coordinates -> Bool
+arc2dEqualWithin a0 a1 =
+    (Arc2d.startPoint a0 == Arc2d.startPoint a1)
+        && (Arc2d.sweptAngle a0 == Arc2d.sweptAngle a1)
+        && point2dEqualWithin (Arc2d.endPoint a0) (Arc2d.endPoint a1)
 
---&& axis2dEqualWithin (Rectangle2d.xAxis r0) (Rectangle2d.xAxis r1)
---&& axis2dEqualWithin (Rectangle2d.yAxis r0) (Rectangle2d.yAxis r1)
+
+point2dEqualWithin : Point2d units coordinates -> Point2d units coordinates -> Bool
+point2dEqualWithin p0 p1 =
+    quantityEqualWithin (Point2d.xCoordinate p0) (Point2d.xCoordinate p1)
+        && quantityEqualWithin (Point2d.yCoordinate p0) (Point2d.yCoordinate p1)
+
+
+arc3dEqualWithin : Arc3d units coordinates -> Arc3d units coordinates -> Bool
+arc3dEqualWithin a0 a1 =
+    (Arc3d.centerPoint a0 == Arc3d.centerPoint a1)
+        && (Arc3d.startPoint a0 == Arc3d.startPoint a1)
