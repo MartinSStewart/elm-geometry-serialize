@@ -29,6 +29,7 @@ module Geometry.Serialize exposing
     , quadraticSpline2d
     , quadraticSpline3d
     , rectangle2d
+    , rectangle3d
     , sketchPlane3d
     , sphere3d
     , triangle2d
@@ -255,8 +256,8 @@ cubicSpline3d =
 cylinder3d : S.Codec e (Cylinder3d.Cylinder3d units coordinates)
 cylinder3d =
     S.record
-        (\centerPoint axis radius length ->
-            Cylinder3d.centeredOn centerPoint axis { radius = radius, length = length }
+        (\centerPoint axialDirection radius length ->
+            Cylinder3d.centeredOn centerPoint axialDirection { radius = radius, length = length }
         )
         |> S.field Cylinder3d.centerPoint point3d
         |> S.field Cylinder3d.axialDirection direction3d
@@ -533,15 +534,17 @@ rectangle2dIsRightHanded rectangle =
         |> Quantity.lessThan Quantity.zero
 
 
-
---{-| Codec for [Rectangle3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Rectangle3d)
----}
---rectangle3d : S.Codec e (Rectangle3d units coordinates)
---rectangle3d =
---    S.record Rectangle3d.centeredOn
---        |> S.field Rectangle3d.yAxis axis3d
---        |> S.field Rectangle3d.dimensions (S.tuple quantity quantity)
---        |> S.finishRecord
+{-| Codec for [Rectangle3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Rectangle3d)
+-}
+rectangle3d : S.Codec e (Rectangle3d units coordinates)
+rectangle3d =
+    S.record
+        (\sketchPlane dimensions ->
+            Rectangle3d.on sketchPlane (Rectangle2d.withDimensions dimensions Quantity.zero Point2d.origin)
+        )
+        |> S.field Rectangle3d.axes sketchPlane3d
+        |> S.field Rectangle3d.dimensions (S.tuple quantity quantity)
+        |> S.finishRecord
 
 
 {-| Codec for [SketchPlane3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/SketchPlane3d)

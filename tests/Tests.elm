@@ -4,55 +4,74 @@ import Arc2d exposing (Arc2d)
 import Arc3d exposing (Arc3d)
 import Axis2d exposing (Axis2d)
 import Axis3d exposing (Axis3d)
-import BoundingBox2d exposing (BoundingBox2d)
-import BoundingBox3d exposing (BoundingBox3d)
+import Block3d exposing (Block3d)
+import Circle3d exposing (Circle3d)
+import Cylinder3d exposing (Cylinder3d)
 import Direction2d exposing (Direction2d)
 import Direction3d exposing (Direction3d)
+import Ellipse2d exposing (Ellipse2d)
+import EllipticalArc2d exposing (EllipticalArc2d)
 import Expect exposing (Expectation)
 import Frame2d exposing (Frame2d)
 import Frame3d exposing (Frame3d)
 import Fuzz exposing (Fuzzer)
+import Geometry.Expect
+import Geometry.Fuzz
 import Geometry.Serialize as Serialize
+import Length exposing (Meters)
 import Plane3d exposing (Plane3d)
 import Point2d exposing (Point2d)
 import Point3d exposing (Point3d)
-import QuadraticSpline2d exposing (QuadraticSpline2d)
-import QuadraticSpline3d exposing (QuadraticSpline3d)
 import Quantity exposing (Quantity)
 import Rectangle2d exposing (Rectangle2d)
+import Rectangle3d exposing (Rectangle3d)
 import Serialize exposing (Codec)
 import SketchPlane3d exposing (SketchPlane3d)
 import Test exposing (Test)
-import Triangle2d exposing (Triangle2d)
-import Triangle3d exposing (Triangle3d)
-import Vector2d exposing (Vector2d)
-import Vector3d exposing (Vector3d)
 
 
 suite : Test
 suite =
     Test.describe "Round trip tests"
-        [ roundTrip point2d "Point2d" Serialize.point2d
-        , roundTrip point3d "Point3d" Serialize.point3d
-        , roundTrip vector2d "Vector2d" Serialize.vector2d
-        , roundTrip vector3d "Vector3d" Serialize.vector3d
-        , roundTripEqualWithin direction2d "Direction2d" Serialize.direction2d direction2dEqualWithin
-        , roundTripEqualWithin direction3d "Direction3d" Serialize.direction3d direction3dEqualWithin
-        , roundTripEqualWithin axis2d "Axis2d" Serialize.axis2d axis2dEqualWithin
-        , roundTripEqualWithin axis3d "Axis3d" Serialize.axis3d axis3dEqualWithin
-        , roundTripEqualWithin frame2d "Frame2d" Serialize.frame2d frame2dEqualWithin
-        , roundTripEqualWithin frame3d "Frame3d" Serialize.frame3d frame3dEqualWithin
-        , roundTripEqualWithin sketchPlane3d "SketchPlane3d" Serialize.sketchPlane3d sketchPlane3dEqualWithin
-        , roundTripEqualWithin plane3d "Plane3d" Serialize.plane3d plane3dEqualWithin
-        , roundTrip boundingBox2d "BoundingBox2d" Serialize.boundingBox2d
-        , roundTrip boundingBox3d "BoundingBox3d" Serialize.boundingBox3d
-        , roundTrip quadraticSpline2d "QuadraticSpline2d" Serialize.quadraticSpline2d
-        , roundTrip quadraticSpline3d "QuadraticSpline3d" Serialize.quadraticSpline3d
-        , roundTripEqualWithin rectangle2d "Rectangle2d" Serialize.rectangle2d rectangle2dEqualWithin
-        , roundTrip triangle2d "Triangle2d" Serialize.triangle2d
-        , roundTrip triangle3d "Triangle3d" Serialize.triangle3d
-        , roundTripEqualWithin arc2d "Arc2d" Serialize.arc2d arc2dEqualWithin
-        , roundTripEqualWithin arc3d "Arc3d" Serialize.arc3d arc3dEqualWithin
+        [ roundTripEqualWithin Geometry.Fuzz.arc2d "Arc2d" Serialize.arc2d arc2dEqualWithin
+
+        --, roundTripEqualWithin Geometry.Fuzz.arc3d "Arc3d" Serialize.arc3d arc3dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.axis2d "Axis2d" Serialize.axis2d axis2dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.axis3d "Axis3d" Serialize.axis3d axis3dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.block3d "Block3d" Serialize.block3d block3dEqualWithin
+        , roundTrip Geometry.Fuzz.boundingBox2d "BoundingBox2d" Serialize.boundingBox2d
+        , roundTrip Geometry.Fuzz.boundingBox3d "BoundingBox3d" Serialize.boundingBox3d
+        , roundTrip Geometry.Fuzz.circle2d "Circle2d" Serialize.circle2d
+        , roundTripEqualWithin Geometry.Fuzz.circle3d "Circle3d" Serialize.circle3d circle3dEqualWithin
+
+        --, roundTripEqualWithin Geometry.Fuzz.cone3d "Cone3d" Serialize.cone3d cone3dEqualWithin
+        , roundTrip Geometry.Fuzz.cubicSpline2d "CubicSpline2d" Serialize.cubicSpline2d
+        , roundTrip Geometry.Fuzz.cubicSpline3d "CubicSpline3d" Serialize.cubicSpline3d
+        , roundTripEqualWithin Geometry.Fuzz.cylinder3d "Cylinder3d" Serialize.cylinder3d cylinder3dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.direction2d "Direction2d" Serialize.direction2d direction2dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.direction3d "Direction3d" Serialize.direction3d direction3dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.ellipse2d "Ellipse2d" Serialize.ellipse2d ellipse2dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.ellipticalArc2d "EllipticalArc2d" Serialize.ellipticalArc2d ellipticalArc2dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.frame2d "Frame2d" Serialize.frame2d frame2dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.frame3d "Frame3d" Serialize.frame3d frame3dEqualWithin
+        , roundTrip Geometry.Fuzz.lineSegment2d "LineSegment2d" Serialize.lineSegment2d
+        , roundTrip Geometry.Fuzz.lineSegment3d "LineSegment3d" Serialize.lineSegment3d
+        , roundTripEqualWithin Geometry.Fuzz.plane3d "Plane3d" Serialize.plane3d plane3dEqualWithin
+        , roundTrip Geometry.Fuzz.point2d "Point2d" Serialize.point2d
+        , roundTrip Geometry.Fuzz.point3d "Point3d" Serialize.point3d
+        , roundTrip Geometry.Fuzz.polygon2d "Polygon2d" Serialize.polygon2d
+        , roundTrip Geometry.Fuzz.polyline2d "Polyline2d" Serialize.polyline2d
+        , roundTrip Geometry.Fuzz.polyline3d "Polyline3d" Serialize.polyline3d
+        , roundTrip Geometry.Fuzz.quadraticSpline2d "QuadraticSpline2d" Serialize.quadraticSpline2d
+        , roundTrip Geometry.Fuzz.quadraticSpline3d "QuadraticSpline3d" Serialize.quadraticSpline3d
+        , roundTripEqualWithin Geometry.Fuzz.rectangle2d "Rectangle2d" Serialize.rectangle2d rectangle2dEqualWithin
+        , roundTripEqualWithin rectangle3d "Rectangle3d" Serialize.rectangle3d rectangle3dEqualWithin
+        , roundTripEqualWithin Geometry.Fuzz.sketchPlane3d "SketchPlane3d" Serialize.sketchPlane3d sketchPlane3dEqualWithin
+        , roundTrip Geometry.Fuzz.sphere3d "Sphere3d" Serialize.sphere3d
+        , roundTrip Geometry.Fuzz.triangle2d "Triangle2d" Serialize.triangle2d
+        , roundTrip Geometry.Fuzz.triangle3d "Triangle3d" Serialize.triangle3d
+        , roundTrip Geometry.Fuzz.vector2d "Vector2d" Serialize.vector2d
+        , roundTrip Geometry.Fuzz.vector3d "Vector3d" Serialize.vector3d
         ]
 
 
@@ -84,204 +103,11 @@ roundTripEqualWithin fuzzer name codec equalWithin =
         )
 
 
-quantity : Fuzzer (Quantity Float units)
-quantity =
-    Fuzz.map Quantity.Quantity Fuzz.float
-
-
-point2d : Fuzzer (Point2d units coordinates)
-point2d =
-    Fuzz.map2 Point2d.xy
-        quantity
-        quantity
-
-
-point3d : Fuzzer (Point3d units coordinates)
-point3d =
-    Fuzz.map3 Point3d.xyz
-        quantity
-        quantity
-        quantity
-
-
-vector2d : Fuzzer (Vector2d units coordinates)
-vector2d =
-    Fuzz.map2 Vector2d.xy
-        quantity
-        quantity
-
-
-vector3d : Fuzzer (Vector3d units coordinates)
-vector3d =
-    Fuzz.map3 Vector3d.xyz
-        quantity
-        quantity
-        quantity
-
-
-direction2d : Fuzzer (Direction2d coordinates)
-direction2d =
-    Fuzz.map Direction2d.fromAngle quantity
-
-
-direction3d : Fuzzer (Direction3d coordinates)
-direction3d =
-    Fuzz.map2 (Direction3d.fromAzimuthInAndElevationFrom SketchPlane3d.xy)
-        quantity
-        quantity
-
-
-axis2d : Fuzzer (Axis2d units coordinates)
-axis2d =
-    Fuzz.map2 Axis2d.withDirection
-        direction2d
-        point2d
-
-
-axis3d : Fuzzer (Axis3d units coordinates)
-axis3d =
-    Fuzz.map2 Axis3d.withDirection
-        direction3d
-        point3d
-
-
-frame2d : Fuzzer (Frame2d units coordinates defines)
-frame2d =
-    Fuzz.map3
-        (\angle position mirror ->
-            let
-                frame =
-                    Frame2d.withAngle angle position
-            in
-            if mirror then
-                Frame2d.mirrorAcross Axis2d.y frame
-
-            else
-                frame
-        )
-        quantity
-        point2d
-        Fuzz.bool
-
-
-frame3d : Fuzzer (Frame3d units coordinates defines)
-frame3d =
-    Fuzz.map4
-        (\position xDirection yDirection mirror ->
-            let
-                ortho =
-                    Direction3d.orthogonalize xDirection yDirection (Direction3d.perpendicularTo xDirection)
-            in
-            case ortho of
-                Just ( xDir, yDir, zDir ) ->
-                    Frame3d.unsafe
-                        { originPoint = position
-                        , xDirection = xDir
-                        , yDirection = yDir
-                        , zDirection =
-                            if mirror then
-                                Direction3d.reverse zDir
-
-                            else
-                                zDir
-                        }
-
-                Nothing ->
-                    Frame3d.withXDirection xDirection position
-        )
-        point3d
-        direction3d
-        direction3d
-        Fuzz.bool
-
-
-sketchPlane3d : Fuzzer (SketchPlane3d units coordinates defines)
-sketchPlane3d =
-    Fuzz.map3
-        (\position direction rotation ->
-            SketchPlane3d.through position direction
-                |> SketchPlane3d.rotateAroundOwn SketchPlane3d.normalAxis rotation
-        )
-        point3d
-        direction3d
-        quantity
-
-
-plane3d : Fuzzer (Plane3d units coordinates)
-plane3d =
-    Fuzz.map2 Plane3d.withNormalDirection
-        direction3d
-        point3d
-
-
-boundingBox2d : Fuzzer (BoundingBox2d units coordinates)
-boundingBox2d =
-    Fuzz.map2 BoundingBox2d.from
-        point2d
-        point2d
-
-
-boundingBox3d : Fuzzer (BoundingBox3d units coordinates)
-boundingBox3d =
-    Fuzz.map2 BoundingBox3d.from
-        point3d
-        point3d
-
-
-quadraticSpline2d : Fuzzer (QuadraticSpline2d units coordinates)
-quadraticSpline2d =
-    Fuzz.map3 QuadraticSpline2d.fromControlPoints
-        point2d
-        point2d
-        point2d
-
-
-quadraticSpline3d : Fuzzer (QuadraticSpline3d units coordinates)
-quadraticSpline3d =
-    Fuzz.map3 QuadraticSpline3d.fromControlPoints
-        point3d
-        point3d
-        point3d
-
-
-rectangle2d : Fuzzer (Rectangle2d units coordinates)
-rectangle2d =
-    Fuzz.map3 (\p0 p1 rotation -> Rectangle2d.from p0 p1 |> Rectangle2d.rotateAround Point2d.origin rotation)
-        point2d
-        point2d
-        quantity
-
-
-triangle2d : Fuzzer (Triangle2d units coordinates)
-triangle2d =
-    Fuzz.map3 Triangle2d.from
-        point2d
-        point2d
-        point2d
-
-
-triangle3d : Fuzzer (Triangle3d units coordinates)
-triangle3d =
-    Fuzz.map3 Triangle3d.from
-        point3d
-        point3d
-        point3d
-
-
-arc2d : Fuzzer (Arc2d units coordinates)
-arc2d =
-    Fuzz.map3 Arc2d.from
-        point2d
-        point2d
-        quantity
-
-
-arc3d : Fuzzer (Arc3d units coordinates)
-arc3d =
-    Fuzz.map3 Arc3d.sweptAround
-        axis3d
-        quantity
-        point3d
+rectangle3d : Fuzzer (Rectangle3d Meters coordinates)
+rectangle3d =
+    Fuzz.map2 Rectangle3d.centeredOn
+        Geometry.Fuzz.sketchPlane3d
+        (Fuzz.map2 (\w h -> ( Length.meters w, Length.meters h )) Fuzz.float Fuzz.float)
 
 
 frame2dEqualWithin : Frame2d units coordinates defines -> Frame2d units coordinates defines -> Bool
@@ -371,7 +197,57 @@ point2dEqualWithin p0 p1 =
         && quantityEqualWithin (Point2d.yCoordinate p0) (Point2d.yCoordinate p1)
 
 
+point3dEqualWithin : Point3d units coordinates -> Point3d units coordinates -> Bool
+point3dEqualWithin p0 p1 =
+    quantityEqualWithin (Point3d.xCoordinate p0) (Point3d.xCoordinate p1)
+        && quantityEqualWithin (Point3d.yCoordinate p0) (Point3d.yCoordinate p1)
+        && quantityEqualWithin (Point3d.zCoordinate p0) (Point3d.zCoordinate p1)
+
+
 arc3dEqualWithin : Arc3d units coordinates -> Arc3d units coordinates -> Bool
 arc3dEqualWithin a0 a1 =
     (Arc3d.centerPoint a0 == Arc3d.centerPoint a1)
         && (Arc3d.startPoint a0 == Arc3d.startPoint a1)
+
+
+ellipse2dEqualWithin : Ellipse2d units coordinates -> Ellipse2d units coordinates -> Bool
+ellipse2dEqualWithin e0 e1 =
+    (Ellipse2d.centerPoint e0 == Ellipse2d.centerPoint e1)
+        && direction2dEqualWithin (Ellipse2d.xDirection e0) (Ellipse2d.xDirection e1)
+        && direction2dEqualWithin (Ellipse2d.yDirection e0) (Ellipse2d.yDirection e1)
+
+
+ellipticalArc2dEqualWithin : EllipticalArc2d units coordinates -> EllipticalArc2d units coordinates -> Bool
+ellipticalArc2dEqualWithin e0 e1 =
+    (EllipticalArc2d.centerPoint e0 == EllipticalArc2d.centerPoint e1)
+        && direction2dEqualWithin (EllipticalArc2d.xDirection e0) (EllipticalArc2d.xDirection e1)
+        && direction2dEqualWithin (EllipticalArc2d.yDirection e0) (EllipticalArc2d.yDirection e1)
+        && (EllipticalArc2d.sweptAngle e0 == EllipticalArc2d.sweptAngle e1)
+        && (EllipticalArc2d.startAngle e0 == EllipticalArc2d.startAngle e1)
+
+
+rectangle3dEqualWithin : Rectangle3d units coordinates -> Rectangle3d units coordinates -> Bool
+rectangle3dEqualWithin e0 e1 =
+    axis3dEqualWithin (Rectangle3d.xAxis e0) (Rectangle3d.xAxis e1)
+        && axis3dEqualWithin (Rectangle3d.yAxis e0) (Rectangle3d.yAxis e1)
+
+
+block3dEqualWithin : Block3d units coordinates -> Block3d units coordinates -> Bool
+block3dEqualWithin b0 b1 =
+    (Block3d.dimensions b0 == Block3d.dimensions b1)
+        && frame3dEqualWithin (Block3d.axes b0) (Block3d.axes b1)
+
+
+circle3dEqualWithin : Circle3d units coordinates -> Circle3d units coordinates -> Bool
+circle3dEqualWithin c0 c1 =
+    (Circle3d.centerPoint c0 == Circle3d.centerPoint c1)
+        && (Circle3d.radius c0 == Circle3d.radius c1)
+        && direction3dEqualWithin (Circle3d.axialDirection c0) (Circle3d.axialDirection c1)
+
+
+cylinder3dEqualWithin : Cylinder3d units coordinates -> Cylinder3d units coordinates -> Bool
+cylinder3dEqualWithin c0 c1 =
+    (Cylinder3d.centerPoint c0 == Cylinder3d.centerPoint c1)
+        && direction3dEqualWithin (Cylinder3d.axialDirection c0) (Cylinder3d.axialDirection c1)
+        && (Cylinder3d.radius c0 == Cylinder3d.radius c1)
+        && (Cylinder3d.length c0 == Cylinder3d.length c1)
