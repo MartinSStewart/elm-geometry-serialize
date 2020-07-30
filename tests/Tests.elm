@@ -8,6 +8,7 @@ import Direction2d exposing (Direction2d)
 import Direction3d exposing (Direction3d)
 import Expect exposing (Expectation)
 import Frame2d exposing (Frame2d)
+import Frame3d exposing (Frame3d)
 import Fuzz exposing (Fuzzer)
 import Geometry.Serialize as Serialize
 import Plane3d exposing (Plane3d)
@@ -36,6 +37,7 @@ suite =
         , roundTripEqualWithin axis2d "Axis2d" Serialize.axis2d axis2dEqualWithin
         , roundTripEqualWithin axis3d "Axis3d" Serialize.axis3d axis3dEqualWithin
         , roundTripEqualWithin frame2d "Frame2d" Serialize.frame2d frame2dEqualWithin
+        , roundTripEqualWithin frame3d "Frame3d" Serialize.frame3d frame3dEqualWithin
         , roundTripEqualWithin sketchPlane3d "SketchPlane3d" Serialize.sketchPlane3d sketchPlane3dEqualWithin
         , roundTripEqualWithin plane3d "Plane3d" Serialize.plane3d plane3dEqualWithin
         , roundTrip boundingBox2d "BoundingBox2d" Serialize.boundingBox2d
@@ -154,6 +156,37 @@ frame2d =
         Fuzz.bool
 
 
+frame3d : Fuzzer (Frame3d units coordinates defines)
+frame3d =
+    Fuzz.map4
+        (\position xDirection yDirection mirror ->
+            let
+                ortho =
+                    Direction3d.orthogonalize xDirection yDirection (Direction3d.perpendicularTo xDirection)
+            in
+            case ortho of
+                Just ( xDir, yDir, zDir ) ->
+                    Frame3d.unsafe
+                        { originPoint = position
+                        , xDirection = xDir
+                        , yDirection = yDir
+                        , zDirection =
+                            if mirror then
+                                Direction3d.reverse zDir
+
+                            else
+                                zDir
+                        }
+
+                Nothing ->
+                    Frame3d.withXDirection xDirection position
+        )
+        point3d
+        direction3d
+        direction3d
+        Fuzz.bool
+
+
 sketchPlane3d : Fuzzer (SketchPlane3d units coordinates defines)
 sketchPlane3d =
     Fuzz.map3
@@ -216,6 +249,14 @@ frame2dEqualWithin f0 f1 =
     (Frame2d.originPoint f0 == Frame2d.originPoint f1)
         && axis2dEqualWithin (Frame2d.xAxis f0) (Frame2d.xAxis f1)
         && axis2dEqualWithin (Frame2d.yAxis f0) (Frame2d.yAxis f1)
+
+
+frame3dEqualWithin : Frame3d units coordinates defines -> Frame3d units coordinates defines -> Bool
+frame3dEqualWithin f0 f1 =
+    (Frame3d.originPoint f0 == Frame3d.originPoint f1)
+        && axis3dEqualWithin (Frame3d.xAxis f0) (Frame3d.xAxis f1)
+        && axis3dEqualWithin (Frame3d.yAxis f0) (Frame3d.yAxis f1)
+        && axis3dEqualWithin (Frame3d.zAxis f0) (Frame3d.zAxis f1)
 
 
 direction2dEqualWithin : Direction2d coordinates -> Direction2d coordinates -> Bool

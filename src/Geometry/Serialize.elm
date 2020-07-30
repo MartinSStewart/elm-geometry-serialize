@@ -16,6 +16,7 @@ module Geometry.Serialize exposing
     , ellipse2d
     , ellipticalArc2d
     , frame2d
+    , frame3d
     , lineSegment2d
     , lineSegment3d
     , plane3d
@@ -56,7 +57,7 @@ import Direction3d exposing (Direction3d)
 import Ellipse2d exposing (Ellipse2d)
 import EllipticalArc2d exposing (EllipticalArc2d)
 import Frame2d exposing (Frame2d)
-import Frame3d
+import Frame3d exposing (Frame3d)
 import LineSegment2d exposing (LineSegment2d)
 import LineSegment3d exposing (LineSegment3d)
 import Plane3d exposing (Plane3d)
@@ -335,13 +336,52 @@ frame2d =
             )
 
 
+{-| Codec for [Frame3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Frame3d)
+-}
+frame3d : S.Codec e (Frame3d units coordinates defines)
+frame3d =
+    S.record
+        (\originPoint xDirection yDirection isRightHanded ->
+            let
+                angleDiff =
+                    Direction3d.angleFrom xDirection yDirection
 
---{-| Codec for [Frame3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Frame3d)
----}
---frame3d =
---    S.record (Frame3d.)
---        |> S.field
---        |> S.finishRecord
+                yDirection_ =
+                    if
+                        (angleDiff |> Quantity.lessThan (Angle.degrees 90.1))
+                            && (angleDiff |> Quantity.greaterThan (Angle.degrees 89.9))
+                    then
+                        yDirection
+
+                    else
+                        Direction3d.perpendicularTo xDirection
+            in
+            case Vector3d.cross (Direction3d.toVector xDirection) (Direction3d.toVector yDirection_) |> Vector3d.direction of
+                Just zDirection ->
+                    if isRightHanded then
+                        Frame3d.unsafe
+                            { originPoint = originPoint
+                            , xDirection = xDirection
+                            , yDirection = yDirection_
+                            , zDirection = Direction3d.reverse zDirection
+                            }
+
+                    else
+                        Frame3d.unsafe
+                            { originPoint = originPoint
+                            , xDirection = xDirection
+                            , yDirection = yDirection_
+                            , zDirection = zDirection
+                            }
+
+                Nothing ->
+                    Frame3d.withXDirection xDirection originPoint
+        )
+        |> S.field Frame3d.originPoint point3d
+        |> S.field Frame3d.xDirection direction3d
+        |> S.field Frame3d.yDirection direction3d
+        |> S.field Frame3d.isRightHanded S.bool
+        |> S.finishRecord
 
 
 {-| Codec for [LineSegment2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/LineSegment2d)
