@@ -1,6 +1,5 @@
 module Geometry.Serialize exposing
     ( arc2d
-    , arc3d
     , axis2d
     , axis3d
     , block3d
@@ -41,7 +40,6 @@ module Geometry.Serialize exposing
 import Angle exposing (Angle)
 import Arc2d exposing (Arc2d)
 import Arc3d exposing (Arc3d)
-import ArcLengthParameterization
 import Axis2d exposing (Axis2d)
 import Axis3d exposing (Axis3d)
 import Block3d exposing (Block3d)
@@ -53,7 +51,6 @@ import Cone3d exposing (Cone3d)
 import CubicSpline2d exposing (CubicSpline2d)
 import CubicSpline3d exposing (CubicSpline3d)
 import Cylinder3d
-import DelaunayTriangulation2d exposing (DelaunayTriangulation2d)
 import Direction2d exposing (Direction2d)
 import Direction3d exposing (Direction3d)
 import Ellipse2d exposing (Ellipse2d)
@@ -80,7 +77,6 @@ import Triangle2d exposing (Triangle2d)
 import Triangle3d exposing (Triangle3d)
 import Vector2d exposing (Vector2d)
 import Vector3d exposing (Vector3d)
-import VoronoiDiagram2d exposing (VoronoiDiagram2d)
 
 
 quantity : S.Codec e (Quantity Float units)
@@ -89,6 +85,9 @@ quantity =
 
 
 {-| Codec for [Arc2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Arc2d)
+
+**Warning:** Due to rounding errors, the Arc2d you get after decoding will be slightly different from what you encoded.
+
 -}
 arc2d : S.Codec e (Arc2d units coordinates)
 arc2d =
@@ -120,6 +119,9 @@ isLargeAngle =
 
 
 {-| Codec for [Arc3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Arc3d)
+
+Don't use this, it's numerically unstable.
+
 -}
 arc3d : S.Codec e (Arc3d units coordinates)
 arc3d =
@@ -305,17 +307,6 @@ direction3d =
         |> S.finishRecord
 
 
-
---S.tuple quantity quantity
---    |> S.map
---        (\( azimuth, elevation ) -> Direction3d.fromAzimuthInAndElevationFrom SketchPlane3d.xy azimuth elevation)
---        (\direction ->
---            ( Direction3d.azimuthIn SketchPlane3d.xy direction
---            , Direction3d.elevationFrom SketchPlane3d.xy direction
---            )
---        )
-
-
 {-| Codec for [Ellipse2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Ellipse2d)
 -}
 ellipse2d : S.Codec e (Ellipse2d units coordinates)
@@ -393,47 +384,49 @@ frame2d =
 frame3d : S.Codec e (Frame3d units coordinates defines)
 frame3d =
     S.record
-        (\originPoint xDirection yDirection isRightHanded ->
+        (\originPoint xDirection yDirection zDirection ->
             let
-                angleDiff =
+                angleDiff0 =
                     Direction3d.angleFrom xDirection yDirection
 
-                yDirection_ =
-                    if
-                        (angleDiff |> Quantity.lessThan (Angle.degrees 90.1))
-                            && (angleDiff |> Quantity.greaterThan (Angle.degrees 89.9))
-                    then
-                        yDirection
+                angleDiff1 =
+                    Direction3d.angleFrom xDirection zDirection
 
-                    else
-                        Direction3d.perpendicularTo xDirection
+                angleDiff2 =
+                    Direction3d.angleFrom zDirection yDirection
             in
-            case Vector3d.cross (Direction3d.toVector xDirection) (Direction3d.toVector yDirection_) |> Vector3d.direction of
-                Just zDirection ->
-                    if isRightHanded then
+            if isRightAngle angleDiff0 && isRightAngle angleDiff1 && isRightAngle angleDiff2 then
+                Frame3d.unsafe
+                    { originPoint = originPoint
+                    , xDirection = xDirection
+                    , yDirection = yDirection
+                    , zDirection = zDirection
+                    }
+
+            else
+                case Direction3d.orthogonalize xDirection yDirection zDirection of
+                    Just ( xDir, yDir, zDir ) ->
                         Frame3d.unsafe
                             { originPoint = originPoint
-                            , xDirection = xDirection
-                            , yDirection = yDirection_
-                            , zDirection = Direction3d.reverse zDirection
+                            , xDirection = xDir
+                            , yDirection = yDir
+                            , zDirection = zDir
                             }
 
-                    else
-                        Frame3d.unsafe
-                            { originPoint = originPoint
-                            , xDirection = xDirection
-                            , yDirection = yDirection_
-                            , zDirection = zDirection
-                            }
-
-                Nothing ->
-                    Frame3d.withXDirection xDirection originPoint
+                    Nothing ->
+                        Frame3d.withXDirection xDirection originPoint
         )
         |> S.field Frame3d.originPoint point3d
         |> S.field Frame3d.xDirection direction3d
         |> S.field Frame3d.yDirection direction3d
-        |> S.field Frame3d.isRightHanded S.bool
+        |> S.field Frame3d.zDirection direction3d
         |> S.finishRecord
+
+
+isRightAngle : Angle -> Bool
+isRightAngle angle =
+    (angle |> Quantity.lessThan (Angle.degrees 90.000000000001))
+        && (angle |> Quantity.greaterThan (Angle.degrees 89.999999999999))
 
 
 {-| Codec for [LineSegment2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/LineSegment2d)
@@ -567,10 +560,7 @@ sketchPlane3d =
                 angleDiff =
                     Direction3d.angleFrom xDirection yDirection
             in
-            if
-                (angleDiff |> Quantity.lessThan (Angle.degrees 90.1))
-                    && (angleDiff |> Quantity.greaterThan (Angle.degrees 89.9))
-            then
+            if isRightAngle angleDiff then
                 SketchPlane3d.unsafe { originPoint = position, xDirection = xDirection, yDirection = yDirection }
 
             else
