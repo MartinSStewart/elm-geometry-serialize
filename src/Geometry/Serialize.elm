@@ -1,41 +1,13 @@
-module Geometry.Serialize exposing
-    ( arc2d
-    , axis2d
-    , axis3d
-    , block3d
-    , boundingBox2d
-    , boundingBox3d
-    , circle2d
-    , circle3d
-    , cone3d
-    , cubicSpline2d
-    , cubicSpline3d
-    , cylinder3d
-    , direction2d
-    , direction3d
-    , ellipse2d
-    , ellipticalArc2d
-    , frame2d
-    , frame3d
-    , lineSegment2d
-    , lineSegment3d
-    , plane3d
-    , point2d
-    , point3d
-    , polygon2d
-    , polyline2d
-    , polyline3d
-    , quadraticSpline2d
-    , quadraticSpline3d
-    , rectangle2d
-    , rectangle3d
-    , sketchPlane3d
-    , sphere3d
-    , triangle2d
-    , triangle3d
-    , vector2d
-    , vector3d
-    )
+module Geometry.Serialize exposing (arc2d, axis2d, axis3d, block3d, boundingBox2d, boundingBox3d, circle2d, circle3d, cone3d, cubicSpline2d, cubicSpline3d, cylinder3d, direction2d, direction3d, ellipse2d, ellipticalArc2d, frame2d, frame3d, lineSegment2d, lineSegment3d, plane3d, point2d, point3d, polygon2d, polyline2d, polyline3d, quadraticSpline2d, quadraticSpline3d, rectangle2d, rectangle3d, sketchPlane3d, sphere3d, triangle2d, triangle3d, vector2d, vector3d)
+
+{-|
+
+
+# Codecs
+
+@docs arc2d, axis2d, axis3d, block3d, boundingBox2d, boundingBox3d, circle2d, circle3d, cone3d, cubicSpline2d, cubicSpline3d, cylinder3d, direction2d, direction3d, ellipse2d, ellipticalArc2d, frame2d, frame3d, lineSegment2d, lineSegment3d, plane3d, point2d, point3d, polygon2d, polyline2d, polyline3d, quadraticSpline2d, quadraticSpline3d, rectangle2d, rectangle3d, sketchPlane3d, sphere3d, triangle2d, triangle3d, vector2d, vector3d
+
+-}
 
 import Angle exposing (Angle)
 import Arc2d exposing (Arc2d)
