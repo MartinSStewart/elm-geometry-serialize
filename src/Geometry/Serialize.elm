@@ -270,21 +270,50 @@ cylinder3d =
 -}
 direction2d : S.Codec e (Direction2d coordinates)
 direction2d =
-    quantity |> S.map Direction2d.fromAngle Direction2d.toAngle
+    S.record
+        (\x y ->
+            if abs (x ^ 2 + y ^ 2 - 1) < 0.0000000000001 then
+                Direction2d.unsafe { x = x, y = y }
+
+            else
+                Vector2d.xy (Quantity.Quantity x) (Quantity.Quantity y)
+                    |> Vector2d.direction
+                    |> Maybe.withDefault Direction2d.x
+        )
+        |> S.field (Direction2d.unwrap >> .x) S.float
+        |> S.field (Direction2d.unwrap >> .y) S.float
+        |> S.finishRecord
 
 
 {-| Codec for [Direction3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Direction3d)
 -}
 direction3d : S.Codec e (Direction3d coordinates)
 direction3d =
-    S.tuple quantity quantity
-        |> S.map
-            (\( azimuth, elevation ) -> Direction3d.fromAzimuthInAndElevationFrom SketchPlane3d.xy azimuth elevation)
-            (\direction ->
-                ( Direction3d.azimuthIn SketchPlane3d.xy direction
-                , Direction3d.elevationFrom SketchPlane3d.xy direction
-                )
-            )
+    S.record
+        (\x y z ->
+            if abs (x ^ 2 + y ^ 2 + z ^ 2 - 1) < 0.0000000000001 then
+                Direction3d.unsafe { x = x, y = y, z = z }
+
+            else
+                Vector3d.xyz (Quantity.Quantity x) (Quantity.Quantity y) (Quantity.Quantity z)
+                    |> Vector3d.direction
+                    |> Maybe.withDefault Direction3d.x
+        )
+        |> S.field (Direction3d.unwrap >> .x) S.float
+        |> S.field (Direction3d.unwrap >> .y) S.float
+        |> S.field (Direction3d.unwrap >> .z) S.float
+        |> S.finishRecord
+
+
+
+--S.tuple quantity quantity
+--    |> S.map
+--        (\( azimuth, elevation ) -> Direction3d.fromAzimuthInAndElevationFrom SketchPlane3d.xy azimuth elevation)
+--        (\direction ->
+--            ( Direction3d.azimuthIn SketchPlane3d.xy direction
+--            , Direction3d.elevationFrom SketchPlane3d.xy direction
+--            )
+--        )
 
 
 {-| Codec for [Ellipse2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Ellipse2d)
@@ -349,7 +378,7 @@ frame2d =
                     frame
 
                 else
-                    Frame2d.mirrorAcross (Frame2d.yAxis frame) frame
+                    Frame2d.reverseX frame
             )
             (\frame ->
                 { position = Frame2d.originPoint frame
@@ -472,14 +501,18 @@ polygon2d =
 -}
 polyline2d : S.Codec e (Polyline2d units coordinates)
 polyline2d =
-    S.list point2d |> S.map Polyline2d.fromVertices Polyline2d.vertices
+    S.record Polyline2d.fromVertices
+        |> S.field Polyline2d.vertices (S.list point2d)
+        |> S.finishRecord
 
 
 {-| Codec for [Polyline3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Polyline3d)
 -}
 polyline3d : S.Codec e (Polyline3d units coordinates)
 polyline3d =
-    S.list point3d |> S.map Polyline3d.fromVertices Polyline3d.vertices
+    S.record Polyline3d.fromVertices
+        |> S.field Polyline3d.vertices (S.list point3d)
+        |> S.finishRecord
 
 
 {-| Codec for [QuadraticSpline2d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/QuadraticSpline2d)
@@ -508,40 +541,17 @@ quadraticSpline3d =
 -}
 rectangle2d : S.Codec e (Rectangle2d units coordinates)
 rectangle2d =
-    S.record
-        (\yAxis isRightHanded dimensions ->
-            let
-                rectangle =
-                    Rectangle2d.withYAxis yAxis dimensions
-            in
-            if isRightHanded then
-                rectangle
-
-            else
-                rectangle |> Rectangle2d.mirrorAcross (Rectangle2d.yAxis rectangle)
-        )
-        |> S.field Rectangle2d.yAxis axis2d
-        |> S.field rectangle2dIsRightHanded S.bool
+    S.record Rectangle2d.centeredOn
+        |> S.field Rectangle2d.axes frame2d
         |> S.field Rectangle2d.dimensions (S.tuple quantity quantity)
         |> S.finishRecord
-
-
-rectangle2dIsRightHanded : Rectangle2d units coordinates -> Bool
-rectangle2dIsRightHanded rectangle =
-    Direction2d.angleFrom
-        (Rectangle2d.yAxis rectangle |> Axis2d.direction)
-        (Rectangle2d.xAxis rectangle |> Axis2d.direction)
-        |> Quantity.lessThan Quantity.zero
 
 
 {-| Codec for [Rectangle3d](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Rectangle3d)
 -}
 rectangle3d : S.Codec e (Rectangle3d units coordinates)
 rectangle3d =
-    S.record
-        (\sketchPlane dimensions ->
-            Rectangle3d.on sketchPlane (Rectangle2d.withDimensions dimensions Quantity.zero Point2d.origin)
-        )
+    S.record Rectangle3d.centeredOn
         |> S.field Rectangle3d.axes sketchPlane3d
         |> S.field Rectangle3d.dimensions (S.tuple quantity quantity)
         |> S.finishRecord
